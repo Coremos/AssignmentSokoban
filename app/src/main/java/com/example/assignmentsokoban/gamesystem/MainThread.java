@@ -5,13 +5,13 @@ import android.view.SurfaceHolder;
 
 public class MainThread extends Thread {
     private SurfaceHolder _surfaceHolder;
-    private GameView _gameView;
+    private ParentView _parentView;
     private boolean _isRunning;
 
-    public MainThread(SurfaceHolder surfaceHolder, GameView gameView)
+    public MainThread(SurfaceHolder surfaceHolder, ParentView parentView)
     {
         _surfaceHolder = surfaceHolder;
-        _gameView = gameView;
+        _parentView = parentView;
         _isRunning = false;
     }
 
@@ -34,7 +34,7 @@ public class MainThread extends Thread {
                     {
                         try
                         {
-                            _gameView.onDraw(canvas);
+                            _parentView.onDraw(canvas);
                             Thread.sleep(2);
                         }
                         catch(Exception e) { }
@@ -51,5 +51,4 @@ public class MainThread extends Thread {
         }
         catch (Exception e) { }
     }
-
 }
