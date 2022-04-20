@@ -1,7 +1,5 @@
 package com.example.assignmentsokoban.gamesystem;
 
-import android.util.Log;
-
 public class ScreenGetter {
     public int ScreenWidth;
     public int ScreenHeight;
@@ -20,10 +18,8 @@ public class ScreenGetter {
     {
         GameViewWidth = width;
         GameViewHeight = height;
-        widthMultiplier = ScreenWidth / GameViewWidth;
-        Log.v("Debug", widthMultiplier + "Screen Width : " + ScreenWidth + " / Screen Height : " + GameViewWidth);
-        heightMultiplier = ScreenHeight / GameViewHeight;
-        Log.v("Debug", heightMultiplier + "Screen Width : " + ScreenHeight + " / Screen Height : " + GameViewHeight);
+        widthMultiplier = (double)ScreenWidth / GameViewWidth;
+        heightMultiplier = (double)ScreenHeight / GameViewHeight;
     }
 
     public int getX(int x) { return (int)(x * widthMultiplier); }
