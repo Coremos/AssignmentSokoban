@@ -5,11 +5,9 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.SurfaceHolder;
 
 import com.example.assignmentsokoban.GameActivity;
 
@@ -23,13 +21,13 @@ public class GameView extends ParentView {
     private static final int MAP_HEIGHT = 9;
 
     private GameActivity _gameActivity;
-    private MainThread _mainThread;
+
     private ScreenGetter _screenGetter;
     private ResourceInfo _resourceInfo;
     private Bitmap[] _bitmaps;
-    private boolean _canDraw;
     private Resources _resources;
     private Collider[] _buttonCollider;
+    private Collider _backButtonCollider;
 
     private int[][] _map;
     private int _scaledPivotX;
@@ -41,13 +39,7 @@ public class GameView extends ParentView {
     private int _playerX;
     private int _playerY;
 
-    public GameView(Context context, AttributeSet attributeSet)
-    {
-        super(context, attributeSet);
-        getHolder().addCallback(this);
-        _mainThread = new MainThread(getHolder(), this);
-        _canDraw = false;
-    }
+    public GameView(Context context, AttributeSet attributeSet) { super(context, attributeSet); }
 
     public void initialize(GameActivity gameActivity, int screenWidth, int screenHeight)
     {
@@ -65,9 +57,11 @@ public class GameView extends ParentView {
             Bitmap bitmap = BitmapFactory.decodeResource(_resources, _resourceInfo.Resources[i]);
             _bitmaps[i] = Bitmap.createScaledBitmap(bitmap, _screenGetter.getX(UNIT_SIZE), _screenGetter.getY(UNIT_SIZE), false);
         }
+
         Bitmap bitmap = BitmapFactory.decodeResource(_resources, _resourceInfo.Resources[ResourceInfo.Pad]);
-        //bitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
         _bitmaps[ResourceInfo.Pad] = Bitmap.createScaledBitmap(bitmap, _screenGetter.getX(UNIT_SIZE * 3), _screenGetter.getY(UNIT_SIZE * 3), false);
+        bitmap = BitmapFactory.decodeResource(_resources, _resourceInfo.Resources[ResourceInfo.BackButton]);
+        _bitmaps[ResourceInfo.BackButton] = Bitmap.createScaledBitmap(bitmap, _screenGetter.getX(UNIT_SIZE), _screenGetter.getY(UNIT_SIZE), false);
 
         _scaledPivotX = _screenGetter.getX(STAGE_PIVOT_X);
         _scaledPivotY = _screenGetter.getY(STAGE_PIVOT_Y);
@@ -103,15 +97,29 @@ public class GameView extends ParentView {
         _buttonCollider[DirectionType.Down] = new Collider(UNIT_SIZE * 1, UNIT_SIZE * 5, UNIT_SIZE, UNIT_SIZE);
         _buttonCollider[DirectionType.Left] = new Collider(UNIT_SIZE * 0, UNIT_SIZE * 4, UNIT_SIZE, UNIT_SIZE);
         _buttonCollider[DirectionType.Right] = new Collider(UNIT_SIZE * 2, UNIT_SIZE * 4, UNIT_SIZE, UNIT_SIZE);
+        _backButtonCollider = new Collider(0, 0, UNIT_SIZE, UNIT_SIZE);
     }
 
-    private void drawDebug(Canvas canvas)
+    @Override
+    protected void onDraw(Canvas canvas)
     {
-        Paint  backPaint = new Paint();
-        backPaint.setColor(Color.BLUE);
-        canvas.drawRect(_screenGetter.getX(0), _screenGetter.getY(0), _screenGetter.getX(UNIT_SIZE), _screenGetter.getY(UNIT_SIZE), backPaint);
-        backPaint.setColor(Color.GREEN);
-        canvas.drawRect(_screenGetter.getX(GAMEVIEW_WIDTH - UNIT_SIZE), _screenGetter.getY(GAMEVIEW_HEIGHT - UNIT_SIZE), _screenGetter.getX(GAMEVIEW_WIDTH), _screenGetter.getY(GAMEVIEW_HEIGHT), backPaint);
+        if (!_canDraw) return;
+        drawMap(canvas);
+        drawUI(canvas);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event)
+    {
+        int x = (int)event.getX();
+        int y = (int)event.getY();
+        switch (event.getAction())
+        {
+            case MotionEvent.ACTION_DOWN:
+                checkClickButton(x, y);
+                return true;
+        }
+        return false;
     }
 
     private void drawMap(Canvas canvas)
@@ -132,42 +140,28 @@ public class GameView extends ParentView {
     private void drawUI(Canvas canvas)
     {
         canvas.drawBitmap(_bitmaps[ResourceInfo.Pad], _scaledUnitX * 0,_scaledUnitY * 3, _paint);
-    }
-
-    @Override
-    protected void onDraw(Canvas canvas)
-    {
-        if (!_canDraw) return;
-        drawMap(canvas);
-        drawUI(canvas);
-    }
-
-    public boolean onTouchEvent(MotionEvent event)
-    {
-        int x = (int)event.getX();
-        int y = (int)event.getY();
-        switch (event.getAction())
-        {
-            case MotionEvent.ACTION_DOWN:
-                checkClickButton(x, y);
-                return true;
-        }
-        return false;
+        canvas.drawBitmap(_bitmaps[ResourceInfo.BackButton], 0, 0, _paint);
     }
 
     public boolean checkClickButton(int x, int y)
     {
-        int originalX = _screenGetter.getOriginalX(x);
-        int originalY = _screenGetter.getOriginalY(y);
+        x = _screenGetter.getOriginalX(x);
+        y = _screenGetter.getOriginalY(y);
+        if (_backButtonCollider.isOverlap(x, y)) onClickBackButton();
         for (int direction = 0; direction < DirectionType.Count; direction++)
         {
-            if (_buttonCollider[direction].isOverlap(originalX, originalY))
+            if (_buttonCollider[direction].isOverlap(x, y))
             {
                 movePlayer(direction);
                 return true;
             }
         }
         return false;
+    }
+
+    public void onClickBackButton()
+    {
+        _gameActivity.finish();
     }
 
     public void movePlayer(int direction)
@@ -211,40 +205,5 @@ public class GameView extends ParentView {
         }
         _playerX += DirectionType.X[direction];
         _playerY += DirectionType.Y[direction];
-    }
-
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) { }
-
-    public void surfaceCreated(SurfaceHolder holder)
-    {
-        _mainThread.setRunning(true);
-        try
-        {
-            if (_mainThread.getState() == Thread.State.TERMINATED)
-            {
-                _mainThread = new MainThread(getHolder(), this);
-                _mainThread.setRunning(true);
-                setFocusable(true);
-            }
-            _mainThread.start();
-        }
-        catch (Exception e) { }
-    }
-
-    public void surfaceDestroyed(SurfaceHolder holder)
-    {
-        boolean retry = true;
-        _mainThread.setRunning(false);
-        while(retry)
-        {
-            try
-            {
-                _mainThread.join();
-                retry = false;
-            }
-            catch(Exception e)
-            {
-            }
-        }
     }
 }
