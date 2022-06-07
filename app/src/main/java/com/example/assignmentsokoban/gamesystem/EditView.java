@@ -31,7 +31,6 @@ public class EditView extends ParentView {
     private Collider[] _paletteCollider;
     private Collider _mapCollider;
 
-    private int[][] _map;
     private int _scaledPivotX;
     private int _scaledPivotY;
     private int _scaledUnitX;
@@ -76,17 +75,6 @@ public class EditView extends ParentView {
 
         _selectedUnit = TileType.Ground;
 
-        _map = new int[MAP_WIDTH][MAP_HEIGHT];
-        for (int x = 0; x < MAP_WIDTH; x++)
-        {
-            for (int y = 0; y < MAP_HEIGHT; y++)
-            {
-                _map[x][y] = TileType.Ground;
-                if (x == 0 || x == MAP_WIDTH - 1 || y == 0 || y == MAP_HEIGHT - 1)
-                    _map[x][y] = TileType.Tree;
-            }
-        }
-
         _paletteCollider = new Collider[TileType.Count];
         for (int i = TileType.Ground; i < TileType.Count; i++)
         {
@@ -125,7 +113,7 @@ public class EditView extends ParentView {
         {
             for (int y = 0; y < MAP_HEIGHT; y++)
             {
-                canvas.drawBitmap(_bitmaps[_map[x][y]], _scaledPivotX + _scaledUnitX * x,
+                canvas.drawBitmap(_bitmaps[Map.Map.Data[x][y]], _scaledPivotX + _scaledUnitX * x,
                         _scaledPivotY + _scaledUnitY * y, _paint);
             }
         }
@@ -161,17 +149,17 @@ public class EditView extends ParentView {
 
     public void paintMap(int tiledX, int tiledY, int tile)
     {
-        if (_map[tiledX][tiledY] == tile) return;
+        if (Map.Map.Data[tiledX][tiledY] == tile) return;
         if (tile == TileType.Duck)
         {
             for (int x = 0; x < MAP_WIDTH; x++)
             {
                 for (int y = 0; y < MAP_HEIGHT; y++)
                 {
-                    if (_map[x][y] == TileType.Duck) _map[x][y] = TileType.Ground;
+                    if (Map.Map.Data[x][y] == TileType.Duck) Map.Map.Data[x][y] = TileType.Ground;
                 }
             }
         }
-        _map[tiledX][tiledY] = tile;
+        Map.Map.Data[tiledX][tiledY] = tile;
     }
 }

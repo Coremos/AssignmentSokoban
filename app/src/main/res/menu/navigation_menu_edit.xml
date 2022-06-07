@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/navigation_new"
+        android:title="New Map"/>
+    <item android:id="@+id/navigation_save"
+        android:title="Save Map"/>
+    <item android:id="@+id/navigation_upload"
+        android:title="Upload To Server"/>
+    <item android:id="@+id/navigation_close"
+        android:title="Close Map"/>
+    <item android:id="@+id/navigation_editName"
+        android:title="Edit Name"/>
+</menu>

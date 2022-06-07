@@ -5,7 +5,8 @@ import com.example.assignmentsokoban.R;
 public class ResourceInfo {
     public static final int Pad = 7;
     public static final int BackButton = 8;
-    public static final int Count = 9;
+    public static final int Select = 9;
+    public static final int Count = 10;
 
     public int[] Resources;
 
@@ -20,5 +21,6 @@ public class ResourceInfo {
         Resources[TileType.Duck] = R.drawable.duck;
         Resources[ResourceInfo.Pad] = R.drawable.pad;
         Resources[ResourceInfo.BackButton] = R.drawable.backbutton;
+        Resources[ResourceInfo.Select] = R.drawable.select;
     }
 }

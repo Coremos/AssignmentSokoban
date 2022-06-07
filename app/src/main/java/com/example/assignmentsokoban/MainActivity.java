@@ -9,9 +9,10 @@ import android.widget.Button;
 
 public class MainActivity extends AppCompatActivity {
 
-    Button button_start;
-    Button button_edit;
-    Button button_exit;
+    private Button button_start;
+    private Button button_edit;
+    private Button button_download;
+    private Button button_exit;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -20,15 +21,23 @@ public class MainActivity extends AppCompatActivity {
 
         button_start = findViewById(R.id.button_start);
         button_edit = findViewById(R.id.button_edit);
+        button_download = findViewById(R.id.button_download);
         button_exit = findViewById(R.id.button_exit);
 
         button_start.setOnClickListener(view -> {
-            Intent intent = new Intent(getApplicationContext(), GameActivity.class);
+            Intent intent = new Intent(getApplicationContext(), SelectActivity.class);
+            intent.putExtra("Mode", "start");
             startActivity(intent);
         });
 
         button_edit.setOnClickListener(view -> {
-            Intent intent = new Intent(getApplicationContext(), EditActivity.class);
+            Intent intent = new Intent(getApplicationContext(), SelectActivity.class);
+            intent.putExtra("Mode", "edit");
+            startActivity(intent);
+        });
+
+        button_download.setOnClickListener(view -> {
+            Intent intent = new Intent(getApplicationContext(), DownloadActivity.class);
             startActivity(intent);
         });
 

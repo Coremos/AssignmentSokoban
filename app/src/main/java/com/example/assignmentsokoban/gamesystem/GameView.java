@@ -8,6 +8,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.widget.Toast;
 
 import com.example.assignmentsokoban.GameActivity;
 
@@ -17,8 +18,6 @@ public class GameView extends ParentView {
     private static final int GAMEVIEW_HEIGHT = UNIT_SIZE * 9;
     private static final int STAGE_PIVOT_X = (int)(UNIT_SIZE * 3.5);
     private static final int STAGE_PIVOT_Y = (int)(UNIT_SIZE * 0);
-    private static final int MAP_WIDTH = 9;
-    private static final int MAP_HEIGHT = 9;
 
     private GameActivity _gameActivity;
 
@@ -29,7 +28,6 @@ public class GameView extends ParentView {
     private Collider[] _buttonCollider;
     private Collider _backButtonCollider;
 
-    private int[][] _map;
     private int _scaledPivotX;
     private int _scaledPivotY;
     private int _scaledUnitX;
@@ -72,25 +70,19 @@ public class GameView extends ParentView {
         _paint.setAntiAlias(false);
         _paint.setFilterBitmap(false);
 
-        _map = new int[MAP_WIDTH][MAP_HEIGHT];
-        for (int x = 0; x < MAP_WIDTH; x++)
+        for (int x = 0; x < Map.WIDTH; x++)
         {
-            for (int y = 0; y < MAP_HEIGHT; y++)
+            for (int y = 0; y < Map.HEIGHT; y++)
             {
-                _map[x][y] = TileType.Ground;
-                if (x == 0 || x == MAP_WIDTH - 1 || y == 0 || y == MAP_HEIGHT - 1)
-                    _map[x][y] = TileType.Tree;
+                if (Map.Map.Data[x][y] == TileType.Duck)
+                {
+                    Map.Map.Data[x][y] = TileType.Ground;
+                    _playerX = x;
+                    _playerY = y;
+                }
+
             }
         }
-        _map[1][1] = TileType.Pond;
-        _map[2][1] = TileType.Pond;
-        _map[3][1] = TileType.Pond;
-        _map[1][2] = TileType.Chick;
-        _map[2][2] = TileType.Chick;
-        _map[3][2] = TileType.Chick;
-
-        _playerX = 3;
-        _playerY = 3;
 
         _buttonCollider = new Collider[DirectionType.Count];
         _buttonCollider[DirectionType.Up] = new Collider(UNIT_SIZE * 1, UNIT_SIZE * 3, UNIT_SIZE, UNIT_SIZE);
@@ -124,11 +116,11 @@ public class GameView extends ParentView {
 
     private void drawMap(Canvas canvas)
     {
-        for (int x = 0; x < MAP_WIDTH; x++)
+        for (int x = 0; x < Map.WIDTH; x++)
         {
-            for (int y = 0; y < MAP_HEIGHT; y++)
+            for (int y = 0; y < Map.HEIGHT; y++)
             {
-                canvas.drawBitmap(_bitmaps[_map[x][y]], _scaledPivotX + _scaledUnitX * x,
+                canvas.drawBitmap(_bitmaps[Map.Map.Data[x][y]], _scaledPivotX + _scaledUnitX * x,
                         _scaledPivotY + _scaledUnitY * y, _paint);
             }
         }
@@ -171,13 +163,13 @@ public class GameView extends ParentView {
         forwardX += DirectionType.X[direction];
         forwardY += DirectionType.Y[direction];
 
-        int forwardTile = _map[forwardX][forwardY];
+        int forwardTile = Map.Map.Data[forwardX][forwardY];
         if (forwardTile == TileType.Tree) return;
         if (forwardTile == TileType.Chick || forwardTile == TileType.ChickPond)
         {
             int forwardX2 = forwardX + DirectionType.X[direction];
             int forwardY2 = forwardY + DirectionType.Y[direction];
-            int forwardTile2 = _map[forwardX2][forwardY2];
+            int forwardTile2 = Map.Map.Data[forwardX2][forwardY2];
             switch (forwardTile2)
             {
                 case TileType.Tree:
@@ -185,25 +177,38 @@ public class GameView extends ParentView {
                 case TileType.ChickPond:
                     return;
                 case TileType.Pond:
-                    _map[forwardX2][forwardY2] = TileType.ChickPond;
+                    Map.Map.Data[forwardX2][forwardY2] = TileType.ChickPond;
                     break;
                 case TileType.Ground:
                 default:
-                    _map[forwardX2][forwardY2] = TileType.Chick;
+                    Map.Map.Data[forwardX2][forwardY2] = TileType.Chick;
                     break;
             }
 
             switch (forwardTile)
             {
                 case TileType.Chick:
-                    _map[forwardX][forwardY] = TileType.Ground;
+                    Map.Map.Data[forwardX][forwardY] = TileType.Ground;
                     break;
                 case TileType.ChickPond:
-                    _map[forwardX][forwardY] = TileType.Pond;
+                    Map.Map.Data[forwardX][forwardY] = TileType.Pond;
                     break;
             }
         }
         _playerX += DirectionType.X[direction];
         _playerY += DirectionType.Y[direction];
+        checkClear();
+    }
+
+    public void checkClear()
+    {
+        for (int x = 0; x < Map.WIDTH; x++)
+        {
+            for (int y = 0; y < Map.HEIGHT; y++)
+            {
+                if (Map.Map.Data[x][y] == TileType.Pond) break;
+            }
+        }
+        _gameActivity.showClearMessage();
     }
 }

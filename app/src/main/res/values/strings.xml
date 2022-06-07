@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">AssignmentSokoban</string>
+    <string name="openMenu">OpenMenu</string>
+    <string name="closeMenu">CloseMenu</string>
 </resources>
